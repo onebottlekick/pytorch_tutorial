@@ -5,7 +5,7 @@ import numpy as np
 import torch.nn as nn
 
 from torch.autograd import Variable
-from torch.utils.data import DataLoader, dataloader
+from torch.utils.data import DataLoader
 from torchvision import transforms, datasets
 from torchvision.utils import save_image
 from tqdm import tqdm
