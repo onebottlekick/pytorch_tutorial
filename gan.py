@@ -4,7 +4,6 @@ import torch
 import numpy as np
 import torch.nn as nn
 
-from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torchvision import transforms, datasets
 from torchvision.utils import save_image
@@ -13,17 +12,17 @@ from tqdm import tqdm
 img_save_path = 'images/gan'
 os.makedirs(img_save_path, exist_ok=True)
 
-epochs = 200
+img_size = 28
+img_channel = 1
+img_shape = (img_channel, img_size, img_size)
 batch_size = 64
+latent_dim = 100
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 learning_rate = 0.0002
 betas = (0.5, 0.999)
-latent_dim = 100
-img_size = 28
-channels = 1
-sample_interval = 400
-img_shape = (channels, img_size, img_size)
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+epochs = 200
 Tensor = torch.cuda.FloatTensor if device=='cuda' else torch.FloatTensor
+img_save_path = 'images/gan'
 img_save_interval = 400
 
 dataset = datasets.MNIST(
@@ -101,14 +100,14 @@ for epoch in range(epochs):
         t.set_description(f'Epoch {epoch}')
         for i, (img, _) in enumerate(t):
             # print(img.shape[0])
-            valid = Variable(Tensor(img.size(0), 1).fill_(1.0), requires_grad=False)
-            fake = Variable(Tensor(img.size(0), 1).fill_(0.0), requires_grad=False)
+            valid = torch.ones(img.size(0), 1, requires_grad=False).type(Tensor).to(device)
+            fake = torch.zeros(img.size(0), 1, requires_grad=False).type(Tensor).to(device)
             
-            real_img = Variable(img.type(Tensor))
+            real_img = img.type(Tensor).to(device)
             
             # train generator
             optimizer_G.zero_grad()
-            z = Variable(Tensor(np.random.normal(0, 1, (img.shape[0], latent_dim))))
+            z = torch.rand(img.size(0), latent_dim).to(device)
             gen_img = generator(z)
             g_loss = adversarial_loss(discriminator(gen_img), valid)
             g_loss.backward()
