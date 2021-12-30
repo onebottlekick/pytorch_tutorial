@@ -6,11 +6,25 @@ from torch.utils.data import DataLoader
 import tqdm
 
 
+def save_checkpoint(state_dict, filename='checkpoint/test/my_checkpoint.pth.tar'):
+    print('saving checkpoint')
+    torch.save(state_dict, filename)
+    
+    
+def load_checkpoint(checkpoint):
+    print('loading checkpoint')
+    model.load_state_dict(checkpoint['state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer'])
+    
+
 epochs = 10
 batch_size = 32
 learning_rate = 0.001
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 log_interval = 200
+
+load_model = True
+save_model = False
 
 train_data = MNIST(
     root = './data',
@@ -68,9 +82,17 @@ model = CNN().to(device=device)
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 criterion = nn.CrossEntropyLoss()
 
+if load_model:
+    load_checkpoint(torch.load('checkpoint/test/my_checkpoint.pth.tar'))
 
 # print(model)
 for epoch in range(1, epochs+1):
+    
+    if save_model:
+        checkpoint = {'state_dict':model.state_dict(), 'optimizer':optimizer.state_dict()}
+        if epoch % 2 == 0:
+            save_checkpoint(checkpoint)
+    
     # train
     model.train()
     with tqdm.tqdm(train_loader, unit='batch') as t:
