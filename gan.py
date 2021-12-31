@@ -15,13 +15,12 @@ os.makedirs(img_save_path, exist_ok=True)
 img_size = 28
 img_channel = 1
 img_shape = (img_channel, img_size, img_size)
-batch_size = 64
+batch_size = 512
 latent_dim = 100
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 learning_rate = 0.0002
 betas = (0.5, 0.999)
 epochs = 200
-Tensor = torch.cuda.FloatTensor if device=='cuda' else torch.FloatTensor
 img_save_path = 'images/gan'
 img_save_interval = 400
 
@@ -100,14 +99,14 @@ for epoch in range(epochs):
         t.set_description(f'Epoch {epoch}')
         for i, (img, _) in enumerate(t):
             # print(img.shape[0])
-            valid = torch.ones(img.size(0), 1, requires_grad=False).type(Tensor).to(device)
-            fake = torch.zeros(img.size(0), 1, requires_grad=False).type(Tensor).to(device)
+            valid = torch.ones(img.size(0), 1, device=device, dtype=torch.float32)
+            fake = torch.zeros(img.size(0), 1, device=device, dtype=torch.float32)
             
-            real_img = img.type(Tensor).to(device)
+            real_img = img.to(device)
             
             # train generator
             optimizer_G.zero_grad()
-            z = torch.rand(img.size(0), latent_dim).to(device)
+            z = torch.rand(img.size(0), latent_dim, device=device)
             gen_img = generator(z)
             g_loss = adversarial_loss(discriminator(gen_img), valid)
             g_loss.backward()
