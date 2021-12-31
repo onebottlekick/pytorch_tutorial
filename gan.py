@@ -5,12 +5,11 @@ import numpy as np
 import torch.nn as nn
 
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms, datasets
-from torchvision.utils import save_image
+from torchvision.utils import save_image, make_grid
 from tqdm import tqdm
 
-img_save_path = 'images/gan'
-os.makedirs(img_save_path, exist_ok=True)
 
 img_size = 28
 img_channel = 1
@@ -21,8 +20,9 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 learning_rate = 0.0002
 betas = (0.5, 0.999)
 epochs = 200
+img_save = False
 img_save_path = 'images/gan'
-img_save_interval = 400
+log_interval = 400
 
 dataset = datasets.MNIST(
     root = 'data',
@@ -94,6 +94,10 @@ discriminator = Discriminator().to(device)
 optimizer_G = torch.optim.Adam(generator.parameters(), lr=learning_rate, betas=betas)
 optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=learning_rate, betas=betas)
 
+writer_real = SummaryWriter('logs/mnist_gan/real')
+writer_fake = SummaryWriter('logs/mnist_gan/fake')
+step = 0
+
 for epoch in range(epochs):
     with tqdm(data_loader, unit='batch') as t:
         t.set_description(f'Epoch {epoch}')
@@ -121,5 +125,16 @@ for epoch in range(epochs):
             optimizer_D.step()
             
             t.set_postfix(D_loss=d_loss.item(), G_loss=g_loss.item())
-            if i%img_save_interval == 0:
-                save_image(gen_img[:25], f'{img_save_path}/epoch{epoch}_{i}.png', nrow=5, normalize=True)
+            if img_save:
+                os.makedirs(img_save_path, exist_ok=True)
+                if i%log_interval == 0:
+                    save_image(gen_img[:25], f'{img_save_path}/epoch{epoch}_{i}.png', nrow=5, normalize=True)
+            
+            if i % log_interval == 0:
+                with torch.no_grad():
+                    img_grid_real = make_grid(real_img[:32], normalize=True)
+                    img_grid_fake = make_grid(gen_img[:32], normalize=True)
+
+                    writer_real.add_image('Real', img_grid_real, global_step=step)
+                    writer_fake.add_image('Fake', img_grid_fake, global_step=step)
+                step += 1
