@@ -4,16 +4,22 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
 
-vgg_arch = [64, 64, 'MP', 128, 128, 'MP', 256, 256, 'MP', 512, 512, 512, 'MP', 512, 512, 512, 'MP']
+vgg_arch = {
+    'VGG11' : [64, 'MP', 128, 'MP', 256, 256, 'MP', 512, 512, 'MP', 512, 512, 'MP'],
+    'VGG13' : [64, 64, 'MP', 128, 128, 'MP', 256, 256, 'MP', 512, 512, 'MP', 512, 512, 'MP'],
+    'VGG16' : [64, 64, 'MP', 128, 128, 'MP', 256, 256, 256, 'MP', 512, 512, 512, 'MP', 512, 512, 512, 'MP'],
+    'VGG19' : [64, 64, 'MP', 128, 128, 'MP', 256, 256, 256, 256, 'MP', 512, 512, 512, 512, 'MP', 512, 512, 512, 512, 'MP']
+}
+
 
 img_channel = 3
 
-class VGG16(nn.Module):
+class VGGNet(nn.Module):
     def __init__(self, in_channel=3, num_classes=1000):
-        super(VGG16, self).__init__()
+        super(VGGNet, self).__init__()
         self.in_channel = in_channel
         self.num_classes = num_classes
-        self.conv_layers = self.create_conv_layers(vgg_arch)
+        self.conv_layers = self.create_conv_layers(vgg_arch['VGG11'])
         self.fc = nn.Sequential(
             nn.Linear(512*7*7, 4096),
             nn.ReLU(),
@@ -48,7 +54,7 @@ class VGG16(nn.Module):
                 
         return nn.Sequential(*layers)
     
-net = VGG16()
+net = VGGNet()
 
 sample = torch.rand(64, 3, 224, 224)
 
