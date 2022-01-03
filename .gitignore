@@ -4,3 +4,4 @@ test.*
 images/
 logs/
 checkpoint/
+__pycache__/
