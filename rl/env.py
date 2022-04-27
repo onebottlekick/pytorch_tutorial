@@ -110,7 +110,7 @@ class ENV:
             
         pygame.draw.rect(self.display, RED, pygame.Rect(self.food.x, self.food.y, BLOCK_SIZE, BLOCK_SIZE))
         
-        text = font.render('Score: ', str(self.score), True, WHITE)
+        text = font.render('Score: ' + str(self.score), True, WHITE)
         self.display.blit(text, (0, 0))
         pygame.display.flip()
         
